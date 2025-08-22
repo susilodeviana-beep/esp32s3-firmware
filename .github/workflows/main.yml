@@ -27,7 +27,7 @@ jobs:
 
     - name: Compile sketch
       run: |
-        arduino-cli compile --fqbn esp32:esp32:esp32s3 ./voice_command_esp32s3.ino
+        arduino-cli compile --fqbn esp32:esp32:esp32s3 ./esp32s3-firmware.ino
         mkdir -p output
         cp ./main.ino.*.bin output/firmware.bin
 
