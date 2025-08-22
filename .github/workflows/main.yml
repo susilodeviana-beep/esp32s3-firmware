@@ -1,4 +1,4 @@
-name: Build ESP32-S3 Firmware
+name: Build ESP32 & ESP32-S3 Firmware
 
 on:
   push:
@@ -33,23 +33,40 @@ jobs:
         echo "sketch=$SKETCH" >> $GITHUB_OUTPUT
         echo "Detected sketch: $SKETCH"
 
-    - name: Compile sketch
+    # ===== Compile for ESP32 DevKit V1 =====
+    - name: Compile for ESP32
+      run: |
+        arduino-cli compile \
+          --fqbn esp32:esp32:esp32 \
+          ${{ steps.detect_sketch.outputs.sketch }} \
+          --export-binaries \
+          --build-path ./build-esp32
+
+    - name: Save ESP32 firmware
+      run: |
+        mkdir -p output
+        BIN_FILE=$(find ./build-esp32 -name "*.bin" | head -n 1)
+        echo "ESP32 BIN: $BIN_FILE"
+        cp "$BIN_FILE" ./output/firmware-esp32.bin
+
+    # ===== Compile for ESP32-S3 =====
+    - name: Compile for ESP32-S3
       run: |
         arduino-cli compile \
           --fqbn esp32:esp32:esp32s3 \
           ${{ steps.detect_sketch.outputs.sketch }} \
           --export-binaries \
-          --build-path ./build
+          --build-path ./build-esp32s3
 
-    - name: Rename firmware
+    - name: Save ESP32-S3 firmware
       run: |
-        mkdir -p output
-        BIN_FILE=$(find ./build -name "*.bin" | head -n 1)
-        echo "BIN file found: $BIN_FILE"
+        BIN_FILE=$(find ./build-esp32s3 -name "*.bin" | head -n 1)
+        echo "ESP32-S3 BIN: $BIN_FILE"
         cp "$BIN_FILE" ./output/firmware-esp32s3.bin
 
-    - name: Upload firmware artifact
+    # ===== Upload both =====
+    - name: Upload firmware artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: firmware-esp32s3
-        path: ./output/firmware-esp32s3.bin
+        name: esp32-firmware-binaries
+        path: ./output/
