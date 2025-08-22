@@ -35,12 +35,17 @@ jobs:
 
     - name: Compile sketch
       run: |
-        arduino-cli compile --fqbn esp32:esp32:esp32s3 ${{ steps.detect_sketch.outputs.sketch }} --export-binaries
+        arduino-cli compile \
+          --fqbn esp32:esp32:esp32s3 \
+          ${{ steps.detect_sketch.outputs.sketch }} \
+          --export-binaries \
+          --build-path ./build
 
     - name: Rename firmware
       run: |
         mkdir -p output
         BIN_FILE=$(find ./build -name "*.bin" | head -n 1)
+        echo "BIN file found: $BIN_FILE"
         cp "$BIN_FILE" ./output/firmware-esp32s3.bin
 
     - name: Upload firmware artifact
