@@ -29,10 +29,10 @@ jobs:
       run: |
         arduino-cli compile --fqbn esp32:esp32:esp32s3 ./main.ino
         mkdir -p output
-        cp ./main.ino.*.bin output/firmware.bin
+        cp ./esp32s3-firmware.ino.*.bin output/esp32s3-firmware.bin
 
     - name: Upload firmware
       uses: actions/upload-artifact@v4
       with:
         name: esp32s3-firmware
-        path: output/firmware.bin
+        path: output/esp32s3-firmware.bin
