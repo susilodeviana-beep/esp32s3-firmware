@@ -1,8 +1,10 @@
-name: Build ESP32S3 firmware
+name: Build ESP32-S3 Firmware
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -11,9 +13,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
-    - name: Install Arduino CLI manually
+    - name: Set up Arduino CLI
       run: |
         curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
         sudo mv bin/arduino-cli /usr/local/bin/
@@ -21,18 +23,20 @@ jobs:
     - name: Install ESP32 Core
       run: |
         arduino-cli config init
-        arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
         arduino-cli core update-index
         arduino-cli core install esp32:esp32
 
     - name: Compile sketch
       run: |
-        arduino-cli compile --fqbn esp32:esp32:esp32s3 ./esp32s3-firmware.ino
-        mkdir -p output
-        cp ./esp32s3-firmware.ino.*.bin output/esp32s3-firmware.bin
+        arduino-cli compile --fqbn esp32:esp32:esp32s3 ./esp32s3-firmware.ino --export-binaries
 
-    - name: Upload firmware
-      uses: actions/upload-artifact@v4
+    - name: Rename firmware
+      run: |
+        mkdir -p output
+        cp ./build/esp32s3-firmware.ino/esp32.esp32.esp32s3/esp32s3-firmware.ino.bin ./output/firmware-esp32s3.bin
+
+    - name: Upload firmware artifact
+      uses: actions/upload-artifact@v3
       with:
-        name: esp32s3-firmware
-        path: output/esp32s3-firmware.bin
+        name: firmware-esp32s3
+        path: ./output/firmware-esp32s3.bin
